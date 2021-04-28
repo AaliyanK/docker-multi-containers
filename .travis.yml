@@ -1,0 +1,24 @@
+sudo: required
+services:
+  - docker
+
+before_install: # Build test version of React project
+# Testing can only be done in development, so we call the dev dockerfile
+# The tests are in react, so we reference client folder
+  - docker build -t aaliyank/react-test -f ./client/Dockerfile.dev ./client
+
+script: # Run tests
+  - docker run -e CI=true aaliyank/react-test npm test
+
+after_success: # Build prod versions of all images
+  - docker build -t aaliyank/multi-client ./client
+  - docker build -t aaliyank/multi-nginx ./nginx
+  - docker build -t aaliyank/multi-server ./server
+  - docker build -t aaliyank/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take these images and push them to docker hub
+  - docker push aaliyank/multi-client
+  - docker push aaliyank/multi-nginx
+  - docker push aaliyank/multi-server
+  - docker push aaliyank/multi-worker
