@@ -1,0 +1,4 @@
+FROM nginx
+# We are overwriting the default file in the etc folder
+# with our own configs
+COPY ./default.conf /etc/nginx/conf.d/default.conf
